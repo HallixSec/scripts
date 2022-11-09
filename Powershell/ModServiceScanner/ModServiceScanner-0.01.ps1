@@ -72,12 +72,8 @@ foreach ($line in $file){
     if ($path_formatted -match '^[A-Z]:\\[a-zA-Z\\0-9\(\)\~ _.-]{1,}.exe' ) { $path_short = $matches[0] }
 
     # Check if the path contains a space character and output
-    if ($path_short.Contains(' ') ) { echo "[!] Path: ${path_short}" }
-    echo ""
-    echo "[+] Check if the directory has AD/WD permissions with icacls"
+    if ($path_short.Contains(' ') ) { echo "[!] Path: ${path_short}" } 
 }
 
-foreach ($line in $file){
-    $path = accesschk64.exe -qlc $line
-    echo $path
-}
+echo ""
+echo "[+] Check if the directory has AD/WD permissions with icacls"
