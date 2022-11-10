@@ -77,3 +77,46 @@ foreach ($line in $file){
 
 echo ""
 echo "[+] Check if the directory has AD/WD permissions with icacls"
+
+# loop through the service names
+$file = echo $services_formatted
+
+$user_option = Read-Host "[+] Run SERVICE_ALL_ACCESS check? (Y/N) This will output a lot of information!"
+if ($user_option.ToString().ToUpper() -eq "Y") {
+    echo ""
+    echo "[+] Checking for SERVICE_ALL_ACCESS servers"
+    # Check for services with SERVICE_ALL_ACCESS set (This will display for all groups)
+    foreach ($line in $file){
+
+        $services = accesschk64.exe -w -qlc $line
+        [System.Collections.ArrayList] $services_array = @()
+        
+        $services | foreach {
+            $line=$_-Split"\n".ToString()
+            $services_array += %{$line -replace "`t", "" -replace " ",""}
+        }
+
+        # Remove program name, version details etc
+        $services_array.RemoveRange(0,5)
+        $service_name = $services_array[0]
+
+        $services_string = ""
+        $services_array | foreach {
+            if ($_ -notcontains "[SE_DACL_PRESENT]" -and $_ -notcontains "[SE_SACL_PRESENT]" -and $_ -notcontains "[SE_SELF_RELATIVE]" -and $_ -notcontains "DESCRIPTORFLAGS:") {
+                $services_string += "$_;"
+                if ("SERVICE_ALL_ACCESS" -in $_) {             
+                    echo "[!] $service_name"
+                    $ser_array = $services_string -split ";" -replace $service_name, ""
+                    echo $ser_array
+                    echo ""
+                }
+            }
+        }    
+    } 
+} elseif ($user_option.ToString().ToUpper() -eq "N") {
+    echo "[!] Goodbye"
+    break
+} else {
+    echo "[!] Invalid Option, Quitting!!"
+    break
+}
